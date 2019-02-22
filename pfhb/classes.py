@@ -38,6 +38,8 @@ class PacketFilterHostBlocker(object):
                       if self.settings.get('STORAGE_TYPE', 'file') == 'redis'
                       else None)
 
+        self.insane_mode = self.settings.get('INSANE_MODE', False)
+
         self.logging = self.settings.get('USE_SYSLOG', False)
 
         self.output('Initializing (Storage: {})'.format(
@@ -67,19 +69,24 @@ class PacketFilterHostBlocker(object):
         return lookup.get('nets')
 
     def get_nets(self, ip):
-        try:
-            nets = self.__get_asn_nets(ip)
-        except:  # noqa
-            return []
+        asn_cidr = [self.__get_asn_cidr(ip)]
 
-        if nets:
-            self.output('Networks found for IP: {} = {}'.format(
-                ip, len(nets)))
-            return [net.get('cidr') for net in nets]
+        if self.insane_mode:
+            try:
+                nets = self.__get_asn_nets(ip)
+            except:  # noqa
+                nets = []
+
+            if nets:
+                self.output('Networks found for IP: {} = {}'.format(
+                    ip, len(nets)))
+                return [net.get('cidr') for net in nets]
+            else:
+                self.output(
+                    'No Networks for IP: {}! Getting ASN CIDR...'.format(ip))
+                return asn_cidr
         else:
-            self.output(
-                'No Networks for IP: {}! Getting ASN CIDR...'.format(ip))
-            return [self.__get_asn_cidr(ip)]
+            return asn_cidr
 
     def nslookup(self, domain):
         ''' Domain name lookup '''
@@ -160,7 +167,7 @@ class PacketFilterHostBlocker(object):
 
                 # yeahp, I consider to block all classes of same company a
                 # little bit INSANE! !@#!@# !@#!@#!$%#$#%
-                if self.settings['INSANE_MODE']:
+                if self.insane_mode:
                     nets = self.get_nets(ip)
                     if nets:
                         asns[group].extend(nets)
