@@ -1,0 +1,37 @@
+#!env python
+
+# PacketFilterHostBlocker - pfhb-cli
+# --
+# License: MIT
+# Author: Ricardo Falasca <ricardo@falasca.com.br>
+# 2019-02-21
+
+from argparse import ArgumentParser
+
+from pfhb import __VERSION__, PacketFilterHostBlocker
+
+
+if __name__ == '__main__':
+
+    parser = ArgumentParser(prog='pfhb-cli',
+                            description=('Generate PF rules and merge with '
+                                         'your original pf.conf file'))
+    parser.add_argument('-d', '--debug',
+                        action='store_const',
+                        const=True)
+
+    parser.add_argument('-v', '--version',
+                        action='version',
+                        help='show this tool version',
+                        version=f'%(prog)s {__VERSION__}')
+
+    parser.add_argument('-s', '--settings-file-path',
+                        action='store',
+                        help=('indicates the location of settings.ini. '
+                              'default: /etc/pfhb/settings.ini'))
+
+    args = parser.parse_args()
+
+    _pfhb = PacketFilterHostBlocker(settings_path=args.settings_file_path,
+                                    debug=args.debug)
+    _pfhb.run()
