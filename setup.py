@@ -13,9 +13,6 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 description = ('Python package to dig hosts and generate PF (Packet Filter) '
                'rules')
 
-with open('requirements.txt', 'r') as f:
-    requirements = f.read().split("\n")
-
 setup_info = dict(
     name='pfhb',
     version=__VERSION__,
@@ -39,7 +36,10 @@ setup_info = dict(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     zip_safe=True,
-    install_requires=requirements,
+    install_requires=[
+        'ipwhois==1.1.0',
+        'redis==3.2.0',
+    ]
 )
 
 setup(**setup_info)

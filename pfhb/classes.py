@@ -179,7 +179,7 @@ class PacketFilterHostBlocker(object):
         block_tbl = 'table <ips_to_block> { %s }' % (
             ', '.join(self.settings['PF_IPS_TO_BLOCK']))
 
-        block_rule = ('block in {} quick on {} proto tcp from '
+        block_rule = ('block in {} quick proto tcp from '
                       '<ips_to_block> to <group_{}>')
 
         group_tbls = []
@@ -190,9 +190,7 @@ class PacketFilterHostBlocker(object):
                     group, ', '.join(ip_groups[group])))
 
             rules.append(block_rule.format(
-                'log' if self.settings['PF_LOG_RULES'] else '',
-                self.settings['PF_INBOUND_INTERFACE'],
-                group))
+                'log' if self.settings['PF_LOG_RULES'] else '', group))
 
         self.output('Rules to be merged: {}'.format(len(rules)))
 

@@ -37,7 +37,6 @@ def load_settings(path):
                                   '/etc/pfhb/pf-merged.conf'),
 
         'PF_LOG_RULES': value('pf', 'LogRules', True) in ['yes', 'true', True],
-        'PF_INBOUND_INTERFACE': value('pf', 'InboundNetworkInterface', 'em0'),
         'PF_IPS_TO_BLOCK': value('pf', 'IPsOrClassesToBlock', '').split(),
         'PF_IPS_TO_PASS': value('pf', 'IPsOrClassesToPass', '').split(),
         'PF_RELOAD_COMMAND': value('pf', 'ReloadCommand', 'pfctl -f'),
@@ -66,9 +65,6 @@ def load_settings(path):
 
     if not settings.get('PF_CONFIG_TARGET'):
         raise Exception('Path for merged pf.conf is missing.')
-
-    if not settings.get('PF_INBOUND_INTERFACE'):
-        raise Exception('Inbound Network Interface config is missing.')
 
     if not settings.get('PF_IPS_TO_BLOCK'):
         raise Exception('Nothing to block. Do you really need this tool?')
