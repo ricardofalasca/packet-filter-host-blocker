@@ -1,5 +1,5 @@
 # Don't forget to bump version at setup.py too.
-__VERSION__ = '0.9.3'
+__VERSION__ = '0.9.4'
 
 __all__ = ['classes']
 
