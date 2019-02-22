@@ -71,6 +71,8 @@ class PacketFilterHostBlocker(object):
     def get_nets(self, ip):
         asn_cidr = [self.__get_asn_cidr(ip)]
 
+        # yeahp, I consider to block all classes of same company a little bit
+        # INSANE! !@#!@# !@#!@#!$%#$#%
         if self.insane_mode:
             try:
                 nets = self.__get_asn_nets(ip)
@@ -165,12 +167,9 @@ class PacketFilterHostBlocker(object):
             for ip in ips:
                 asns[group].append(ip)
 
-                # yeahp, I consider to block all classes of same company a
-                # little bit INSANE! !@#!@# !@#!@#!$%#$#%
-                if self.insane_mode:
-                    nets = self.get_nets(ip)
-                    if nets:
-                        asns[group].extend(nets)
+                nets = self.get_nets(ip)
+                if nets:
+                    asns[group].extend(nets)
 
             if self.redis:
                 self.redis.set('ips_{}'.format(group), ','.join(ips))
