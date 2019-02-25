@@ -38,9 +38,10 @@ class PacketFilterHostBlocker(object):
                       if self.settings.get('STORAGE_TYPE', 'file') == 'redis'
                       else None)
 
-        self.insane_mode = self.settings.get('INSANE_MODE', False)
-
-        self.logging = self.settings.get('USE_SYSLOG', False)
+        self.insane_mode = self.settings.get('INSANE_MODE')
+        self.block_domain_networks = self.settings.get('BLOCK_DOMAIN_NETWORKS')
+        self.resolve_www_prefix = self.settings.get('RESOLVE_WWW_PREFIX')
+        self.logging = self.settings.get('USE_SYSLOG')
 
         self.output('Initializing (Storage: {})'.format(
             'Redis' if self.redis else 'File'))
@@ -68,8 +69,10 @@ class PacketFilterHostBlocker(object):
                                asn_methods=['whois'])
         return lookup.get('nets')
 
-    def get_nets(self, ip):
-        asn_cidr = [self.__get_asn_cidr(ip)]
+    def get_nets_to_block(self, ip):
+        nets_to_block = []
+        if self.block_domain_networks:
+            nets_to_block.append(self.__get_asn_cidr(ip))
 
         # yeahp, I consider to block all classes of same company a little bit
         # INSANE! !@#!@# !@#!@#!$%#$#%
@@ -82,13 +85,12 @@ class PacketFilterHostBlocker(object):
             if nets:
                 self.output('Networks found for IP: {} = {}'.format(
                     ip, len(nets)))
-                return [net.get('cidr') for net in nets]
+                nets_to_block += [net.get('cidr') for net in nets]
             else:
                 self.output(
                     'No Networks for IP: {}! Getting ASN CIDR...'.format(ip))
-                return asn_cidr
-        else:
-            return asn_cidr
+
+        return nets_to_block
 
     def nslookup(self, domain):
         ''' Domain name lookup '''
@@ -155,11 +157,20 @@ class PacketFilterHostBlocker(object):
             # nslookup the domain
             ips = []
             for domain in groups[group]:
-                resolved = self.nslookup(domain)
-                if resolved:
-                    for ip in resolved:
-                        if ip and ip not in ips:
-                            ips.append(ip)
+                domains_to_resolve = [domain]
+
+                if self.resolve_www_prefix:
+                    domains_to_resolve.append(
+                        (domain[4:] if domain.startswith('www.') else
+                         'www.{}'.format(domain)))
+
+                # resolve domains
+                for d2r in domains_to_resolve:
+                    resolved = self.nslookup(d2r)
+                    if resolved:
+                        for ip in resolved:
+                            if ip and ip not in ips:
+                                ips.append(ip)
 
             # now, after get all ips, let's search by their ANS's and add
             # to the group.
@@ -167,7 +178,7 @@ class PacketFilterHostBlocker(object):
             for ip in ips:
                 asns[group].append(ip)
 
-                nets = self.get_nets(ip)
+                nets = self.get_nets_to_block(ip)
                 if nets:
                     asns[group].extend(nets)
 

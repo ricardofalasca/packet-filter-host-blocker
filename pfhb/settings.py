@@ -57,7 +57,13 @@ def load_settings(path):
                        in ['yes', 'true', True]),
 
         'INSANE_MODE': (value('misc', 'InsaneMode', False)
-                        in ['yes', 'true', True])
+                        in ['yes', 'true', True]),
+
+        'RESOLVE_WWW_PREFIX': (value('misc', 'Resolve3wPrefix', True)
+                               in ['yes', 'true', True]),
+
+        'BLOCK_DOMAIN_NETWORKS': (value('misc', 'BlockDomainNetworks', False)
+                                  in ['yes', 'true', True]),
     }
 
     if not settings.get('PF_CONFIG_SOURCE'):
