@@ -38,7 +38,7 @@ setup_info = dict(
     zip_safe=True,
     install_requires=[
         'ipwhois==1.1.0',
-        'redis==3.2.0',
+        'redis==4.4.4',
     ]
 )
 
